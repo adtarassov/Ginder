@@ -1,6 +1,6 @@
 package com.adtarassov.ginder.di
 
-import com.adtarassov.ginder.data.GitApi
+import com.adtarassov.ginder.data.GitSearchService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,6 +24,6 @@ object NetworkModule {
 
   @Provides
   @Singleton
-  fun provideGitApi(retrofit: Retrofit): GitApi = retrofit.create(GitApi::class.java)
+  fun provideGitApi(retrofit: Retrofit): GitSearchService = retrofit.create(GitSearchService::class.java)
 
 }
