@@ -21,6 +21,92 @@
         app:layout_constraintTop_toTopOf="parent"
         />
 
+    <TextView
+        android:id="@+id/repo_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginTop="16dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="22sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Test"
+        />
+
+    <ImageView
+        android:id="@+id/owner_image"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginTop="8dp"
+        android:contentDescription="@string/user_image"
+        app:layout_constraintEnd_toStartOf="@id/user_name"
+        app:layout_constraintStart_toStartOf="@id/repo_name"
+        app:layout_constraintTop_toBottomOf="@id/repo_name"
+        />
+
+    <TextView
+        android:id="@+id/user_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@id/owner_image"
+        app:layout_constraintEnd_toEndOf="@id/repo_name"
+        app:layout_constraintStart_toEndOf="@id/owner_image"
+        app:layout_constraintTop_toTopOf="@id/owner_image"
+        tools:text="Username"
+        />
+
+    <TextView
+        android:id="@+id/forks_count"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@id/repo_name"
+        app:layout_constraintStart_toStartOf="@id/owner_image"
+        app:layout_constraintTop_toBottomOf="@id/owner_image"
+        tools:text="forks_count"
+        />
+
+    <TextView
+        android:id="@+id/watchers_count"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@id/repo_name"
+        app:layout_constraintStart_toStartOf="@id/owner_image"
+        app:layout_constraintTop_toBottomOf="@id/forks_count"
+        tools:text="watchers_count"
+        />
+
+    <TextView
+        android:id="@+id/is_archive"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="@id/repo_name"
+        app:layout_constraintStart_toStartOf="@id/owner_image"
+        app:layout_constraintTop_toBottomOf="@id/watchers_count"
+        tools:text="is_archive"
+        />
+
     <Button
         android:id="@+id/refresh_button"
         android:layout_width="wrap_content"

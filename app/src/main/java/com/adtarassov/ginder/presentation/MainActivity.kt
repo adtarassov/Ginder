@@ -13,11 +13,11 @@ import com.adtarassov.ginder.databinding.ActivityMainBinding
 import com.adtarassov.ginder.presentation.CardUiModelState.Empty
 import com.adtarassov.ginder.presentation.CardUiModelState.Error
 import com.adtarassov.ginder.presentation.CardUiModelState.Loading
-import com.adtarassov.ginder.presentation.MainEvent.OnRefreshClick
-import com.adtarassov.ginder.presentation.MainEvent.OnSearchClick
-import com.adtarassov.ginder.presentation.MainEvent.OnSearchTextChange
-import com.adtarassov.ginder.presentation.MainEvent.OnSwipeLeft
-import com.adtarassov.ginder.presentation.MainEvent.OnSwipeRight
+import com.adtarassov.ginder.presentation.MainViewEvent.OnRefreshClick
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchClick
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchTextChange
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeLeft
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeRight
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     viewModel.obtainEvent(OnRefreshClick)
   }
 
-  private fun bindState(state: MainState) {
+  private fun bindState(state: MainViewState) {
     changeTransitionAvailable(disable = state.cardTop is Empty || state.cardTop is Loading || state.cardTop is Error)
     binding.cardOne.setState(state.cardTop, ::onRefreshClick)
     binding.cardTwo.setState(state.cardBottom, ::onRefreshClick)

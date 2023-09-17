@@ -5,4 +5,5 @@
   <string name="like">Like</string>
  <string name="dislike">Dislike</string>
   <string name="refresh">Refresh</string>
+  <string name="user_image">User image</string>
 </resources>

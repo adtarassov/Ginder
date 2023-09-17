@@ -1,6 +1,6 @@
 package com.adtarassov.ginder.presentation
 
-data class MainState(
+data class MainViewState(
   val inputText: String,
   val currentPage: Int,
   val cardTop: CardUiModelState,

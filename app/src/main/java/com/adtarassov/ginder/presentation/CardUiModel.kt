@@ -8,6 +8,9 @@ sealed interface CardUiModelState {
     val repoName: String,
     val userName: String,
     val avatarUrl: String,
+    val forksCount: String,
+    val watchersCount: String,
+    val isArchive: String,
   ) : CardUiModelState
 
   object Loading : CardUiModelState

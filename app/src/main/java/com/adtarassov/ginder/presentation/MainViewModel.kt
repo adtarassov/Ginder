@@ -1,18 +1,17 @@
 package com.adtarassov.ginder.presentation
 
 import android.util.Log
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adtarassov.ginder.data.RepositoryResponseModel
 import com.adtarassov.ginder.data.ResponseState.Error
 import com.adtarassov.ginder.data.ResponseState.Success
 import com.adtarassov.ginder.domain.SearchRepositoryUseCase
-import com.adtarassov.ginder.presentation.MainEvent.OnRefreshClick
-import com.adtarassov.ginder.presentation.MainEvent.OnSearchClick
-import com.adtarassov.ginder.presentation.MainEvent.OnSearchTextChange
-import com.adtarassov.ginder.presentation.MainEvent.OnSwipeLeft
-import com.adtarassov.ginder.presentation.MainEvent.OnSwipeRight
+import com.adtarassov.ginder.presentation.MainViewEvent.OnRefreshClick
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchClick
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchTextChange
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeLeft
+import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeRight
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,7 +34,7 @@ class MainViewModel @Inject constructor(
   private var totalCount = 0
   private var lastQueryText: String = ""
 
-  fun obtainEvent(event: MainEvent) {
+  fun obtainEvent(event: MainViewEvent) {
     when (event) {
 
       OnSwipeRight -> {
@@ -161,7 +160,7 @@ class MainViewModel @Inject constructor(
     }
   }
 
-  private fun getInitialState() = MainState(
+  private fun getInitialState() = MainViewState(
     inputText = "",
     currentPage = 1,
     cardTop = CardUiModelState.Empty("Your list are empty"),
@@ -180,11 +179,13 @@ class MainViewModel @Inject constructor(
   private fun RepositoryResponseModel.toUiModel(): CardUiModelState.Success =
     CardUiModelState.Success(
       id = id,
-      repoName = name,
-      userName = owner.login,
+      repoName = "Repository: $name",
+      userName = "Owner: ${owner.login}",
+      forksCount = "Forks: $forks",
+      watchersCount = "Watchers: $watchers",
+      isArchive = "Archived: $archived",
       avatarUrl = owner.avatarUrl
     )
-
 
   private fun canLoadMore() = totalCount > items.size
 

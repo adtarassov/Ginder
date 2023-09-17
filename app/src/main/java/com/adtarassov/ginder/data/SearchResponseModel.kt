@@ -1,5 +1,6 @@
 package com.adtarassov.ginder.data
 
+import android.text.BoringLayout
 import com.google.gson.annotations.SerializedName
 
 data class SearchResponseModel(
@@ -22,6 +23,15 @@ data class RepositoryResponseModel(
 
   @SerializedName("owner")
   val owner: OwnerRepositoryResponseModel,
+
+  @SerializedName("watchers")
+  val watchers: Long,
+
+  @SerializedName("forks")
+  val forks: Long,
+
+  @SerializedName("archived")
+  val archived: Boolean,
 )
 
 data class OwnerRepositoryResponseModel(

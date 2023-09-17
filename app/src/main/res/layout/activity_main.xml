@@ -49,7 +49,7 @@
       app:layout_constraintTop_toTopOf="@id/search_view_container"
       />
 
-  <com.adtarassov.ginder.presentation.CardView
+  <com.adtarassov.ginder.presentation.RepositoryCardView
       android:id="@+id/cardTwo"
       android:layout_width="270dp"
       android:layout_height="424dp"
@@ -62,7 +62,7 @@
       app:strokeWidth="2dp"
       />
 
-  <com.adtarassov.ginder.presentation.CardView
+  <com.adtarassov.ginder.presentation.RepositoryCardView
       android:id="@+id/cardOne"
       android:layout_width="270dp"
       android:layout_height="424dp"
