@@ -70,8 +70,7 @@ class MainActivity : AppCompatActivity() {
 
     binding.searchView.addTextChangedListener(
       onTextChanged = { text, _, _, _ ->
-        val text = text.toString()
-        viewModel.obtainEvent(OnSearchTextChange(text))
+        viewModel.obtainEvent(OnSearchTextChange(text.toString()))
       }
     )
   }
