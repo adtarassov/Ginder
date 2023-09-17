@@ -7,6 +7,7 @@ import androidx.core.view.isVisible
 import coil.load
 import coil.request.Disposable
 import coil.transform.CircleCropTransformation
+import com.adtarassov.ginder.R
 import com.adtarassov.ginder.databinding.RepositoryCardViewBinding
 import com.adtarassov.ginder.presentation.CardUiModelState.Empty
 import com.adtarassov.ginder.presentation.CardUiModelState.Error
@@ -53,13 +54,13 @@ class RepositoryCardView @JvmOverloads constructor(
     when (model) {
       is Empty -> {
         binding.informationText.isVisible = true
-        binding.informationText.text = model.text
+        binding.informationText.text = model.textId?.let { context.getText(it) } ?: ""
       }
 
       is Error -> {
         binding.refreshButton.isVisible = true
         binding.informationText.isVisible = true
-        binding.informationText.text = model.text
+        binding.informationText.text = model.textId?.let { context.getText(it) } ?: ""
       }
 
       Loading -> {
@@ -74,12 +75,17 @@ class RepositoryCardView @JvmOverloads constructor(
         binding.isArchive.isVisible = true
         binding.ownerImage.isVisible = true
 
-        binding.repoName.text = model.repoName
-        binding.userName.text = model.userName
+        val repoName = "${context.getText(R.string.repository)} ${model.repoName}"
+        val userName = "${context.getText(R.string.owner)} ${model.userName}"
+        val forksCount = "${context.getText(R.string.forks)} ${model.forksCount}"
+        val watchersCount = "${context.getText(R.string.watchers)} ${model.watchersCount}"
+        val isArchive = "${context.getText(R.string.archived)} ${model.isArchive}"
 
-        binding.forksCount.text = model.forksCount
-        binding.watchersCount.text = model.watchersCount
-        binding.isArchive.text = model.isArchive
+        binding.repoName.text = repoName
+        binding.userName.text = userName
+        binding.forksCount.text = forksCount
+        binding.watchersCount.text = watchersCount
+        binding.isArchive.text = isArchive
 
         disposable = binding.ownerImage.load(model.avatarUrl) {
           crossfade(true)

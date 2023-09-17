@@ -1,7 +1,12 @@
 package com.adtarassov.ginder.presentation
 
+import androidx.annotation.StringRes
+
 sealed interface CardUiModelState {
-  data class Empty(val text: String = "") : CardUiModelState
+  data class Empty(
+    @StringRes
+    val textId: Int? = null,
+  ) : CardUiModelState
 
   data class Success(
     val id: Long,
@@ -10,10 +15,13 @@ sealed interface CardUiModelState {
     val avatarUrl: String,
     val forksCount: String,
     val watchersCount: String,
-    val isArchive: String,
+    val isArchive: Boolean,
   ) : CardUiModelState
 
   object Loading : CardUiModelState
 
-  data class Error(val text: String) : CardUiModelState
+  data class Error(
+    @StringRes
+    val textId: Int? = null,
+  ) : CardUiModelState
 }

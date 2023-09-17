@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.adtarassov.ginder.R
 import com.adtarassov.ginder.data.RepositoryResponseModel
 import com.adtarassov.ginder.data.ResponseState.Error
 import com.adtarassov.ginder.data.ResponseState.Success
@@ -107,7 +108,7 @@ class MainViewModel @Inject constructor(
       when (val result = searchRepositoryUseCase.execute(query, currentPage)) {
         is Error -> {
           _viewStateFlow.value = _viewStateFlow.value.copy(
-            cardTop = CardUiModelState.Error("Something wrong, please try again")
+            cardTop = CardUiModelState.Error(R.string.error)
           )
         }
 
@@ -121,7 +122,7 @@ class MainViewModel @Inject constructor(
           }
           if (uiModels.isEmpty()) {
             _viewStateFlow.value = _viewStateFlow.value.copy(
-              cardTop = CardUiModelState.Empty("Empty after search"),
+              cardTop = CardUiModelState.Empty(R.string.empty_list),
               cardBottom = CardUiModelState.Empty(),
             )
           } else {
@@ -144,7 +145,7 @@ class MainViewModel @Inject constructor(
       when (val result = searchRepositoryUseCase.execute(query, newCurrentPage)) {
         is Error -> {
           _viewStateFlow.value = _viewStateFlow.value.copy(
-            cardTop = CardUiModelState.Error("Something wrong, please try again")
+            cardTop = CardUiModelState.Error(R.string.error)
           )
         }
 
@@ -167,7 +168,7 @@ class MainViewModel @Inject constructor(
   }
 
   private fun getInitialState() = MainViewState(
-    cardTop = CardUiModelState.Empty("Your list are empty"),
+    cardTop = CardUiModelState.Empty(R.string.empty_list),
     cardBottom = CardUiModelState.Empty(),
   )
 
@@ -178,12 +179,12 @@ class MainViewModel @Inject constructor(
   private fun RepositoryResponseModel.toUiModel(): CardUiModelState.Success =
     CardUiModelState.Success(
       id = id,
-      repoName = "Repository: $name",
-      userName = "Owner: ${owner.login}",
-      forksCount = "Forks: $forks",
-      watchersCount = "Watchers: $watchers",
-      isArchive = "Archived: $archived",
-      avatarUrl = owner.avatarUrl
+      repoName = name,
+      avatarUrl = owner.avatarUrl,
+      userName = owner.login,
+      forksCount = forks.toString(),
+      watchersCount = watchers.toString(),
+      isArchive = archived,
     )
 
   private fun canLoadMore() = totalCount > items.size

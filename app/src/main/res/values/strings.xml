@@ -1,9 +1,16 @@
 <resources>
- <string name="app_name">Ginder</string> <!-- Git + Tinder = Ginder -->
+  <string name="app_name">Ginder</string> <!-- Git + Tinder = Ginder -->
   <string name="search_github_repo">Search GitHub Repository</string>
- <string name="search">Search</string>
+  <string name="search">Search</string>
   <string name="like">Like</string>
- <string name="dislike">Dislike</string>
+  <string name="dislike">Dislike</string>
   <string name="refresh">Refresh</string>
   <string name="user_image">User image</string>
+  <string name="empty_list">Your list are empty</string>
+  <string name="error">Something wrong, please try again later</string>
+  <string name="repository">Repository: </string>
+  <string name="owner">Owner: </string>
+  <string name="forks">Forks: </string>
+  <string name="watchers">Watchers: </string>
+  <string name="archived">Archived: </string>
 </resources>
