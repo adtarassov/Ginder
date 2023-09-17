@@ -15,7 +15,7 @@
     <KeyFrameSet>
 
       <KeyPosition
-          app:framePosition="60"
+          app:framePosition="50"
           app:keyPositionType="pathRelative"
           app:motionTarget="@id/cardOne"
           app:percentY="0.1" />
@@ -43,7 +43,7 @@
     <KeyFrameSet>
 
       <KeyPosition
-          app:framePosition="60"
+          app:framePosition="50"
           app:keyPositionType="pathRelative"
           app:motionTarget="@id/cardOne"
           app:percentY="-0.1" />

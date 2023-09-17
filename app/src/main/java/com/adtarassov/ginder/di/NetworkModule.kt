@@ -24,6 +24,6 @@ object NetworkModule {
 
   @Provides
   @Singleton
-  fun provideGitApi(retrofit: Retrofit): GitSearchService = retrofit.create(GitSearchService::class.java)
+  fun provideGitSearchService(retrofit: Retrofit): GitSearchService = retrofit.create(GitSearchService::class.java)
 
 }
