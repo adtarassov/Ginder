@@ -18,9 +18,6 @@ import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchClick
 import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchTextChange
 import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeLeft
 import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeRight
-import com.adtarassov.ginder.presentation.MainViewState.Transition.Left
-import com.adtarassov.ginder.presentation.MainViewState.Transition.Right
-import com.adtarassov.ginder.presentation.MainViewState.Transition.Unknown
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -87,24 +84,9 @@ class MainActivity : AppCompatActivity() {
     viewModel.obtainEvent(OnRefreshClick)
   }
 
-  private var stateOfCardTow: CardUiModelState? = null
-
   private fun bindState(state: MainViewState) {
     changeTransitionAvailable(disable = state.cardTop is Empty || state.cardTop is Loading || state.cardTop is Error)
-    stateOfCardTow = state.cardBottom
     binding.cardOne.setState(state.cardTop, ::onRefreshClick)
-    binding.root.progress = 0f
-    when (state.transitionType) {
-      Left -> {
-        binding.root.setTransition(R.id.startToRight)
-      }
-
-      Right -> {
-        binding.root.setTransition(R.id.startToLeft)
-      }
-
-      Unknown -> { /* no-op */ }
-    }
     binding.cardTwo.setState(state.cardBottom, ::onRefreshClick)
   }
 
@@ -134,11 +116,15 @@ class MainActivity : AppCompatActivity() {
     override fun onTransitionCompleted(motionLayout: MotionLayout, currentId: Int) {
       when (currentId) {
         R.id.offScreenUnlike -> {
-//          viewModel.obtainEvent(OnSwipeLeft)
+          viewModel.obtainEvent(OnSwipeLeft)
+          binding.root.setTransition(R.id.startToRight)
+          binding.root.progress = 0f
         }
 
         R.id.offScreenLike -> {
-//          viewModel.obtainEvent(OnSwipeRight)
+          viewModel.obtainEvent(OnSwipeRight)
+          binding.root.setTransition(R.id.startToLeft)
+          binding.root.progress = 0f
         }
       }
     }

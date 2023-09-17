@@ -1,7 +1,6 @@
 package com.adtarassov.ginder.presentation
 
 import android.util.Log
-import androidx.constraintlayout.motion.widget.OnSwipe
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,8 +14,6 @@ import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchClick
 import com.adtarassov.ginder.presentation.MainViewEvent.OnSearchTextChange
 import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeLeft
 import com.adtarassov.ginder.presentation.MainViewEvent.OnSwipeRight
-import com.adtarassov.ginder.presentation.MainViewState.Transition.Left
-import com.adtarassov.ginder.presentation.MainViewState.Transition.Right
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,16 +51,16 @@ class MainViewModel @Inject constructor(
   fun obtainEvent(event: MainViewEvent) {
     when (event) {
 
-      is OnSwipeRight -> {
+      OnSwipeRight -> {
         val cardTop = viewStateFlow.value.cardTop as? CardUiModelState.Success ?: return
         Log.d("MainViewModel", "You liked ${cardTop.id}")
-        changeTopCard(event)
+        changeTopCard()
       }
 
-      is OnSwipeLeft -> {
+      OnSwipeLeft -> {
         val cardTop = viewStateFlow.value.cardTop as? CardUiModelState.Success ?: return
         Log.d("MainViewModel", "You disliked ${cardTop.id}")
-        changeTopCard(event)
+        changeTopCard()
       }
 
       OnRefreshClick -> {
@@ -85,7 +82,7 @@ class MainViewModel @Inject constructor(
     }
   }
 
-  private fun changeTopCard(event: MainViewEvent) {
+  private fun changeTopCard() {
     currentIndex += 1
     if (currentIndex == items.size - 2 && canLoadMore()) {
       getNewPage(lastQueryText)
@@ -93,7 +90,6 @@ class MainViewModel @Inject constructor(
     _viewStateFlow.value = _viewStateFlow.value.copy(
       cardTop = getTopCard(),
       cardBottom = getBottomCard(),
-      transitionType = if (event is OnSwipeLeft) Left else Right
     )
   }
 
