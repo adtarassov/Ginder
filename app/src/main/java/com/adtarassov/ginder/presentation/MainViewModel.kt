@@ -4,10 +4,10 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.adtarassov.ginder.data.RepositoryResponseModel
 import com.adtarassov.ginder.data.ResponseState.Error
 import com.adtarassov.ginder.data.ResponseState.Success
 import com.adtarassov.ginder.domain.SearchRepositoryUseCase
+import com.adtarassov.ginder.presentation.MainEvent.OnRefreshClick
 import com.adtarassov.ginder.presentation.MainEvent.OnSearchClick
 import com.adtarassov.ginder.presentation.MainEvent.OnSearchTextChange
 import com.adtarassov.ginder.presentation.MainEvent.OnSwipeLeft
@@ -21,92 +21,49 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-  private val savedStateHandle: SavedStateHandle,
   private val searchRepositoryUseCase: SearchRepositoryUseCase,
 ) : ViewModel() {
 
-  private val _viewStateFlow = MutableStateFlow(MainState.EMPTY)
+  private var items = mutableListOf<CardUiModelState>()
+
+  private val _viewStateFlow = MutableStateFlow(getInitialState())
   val viewStateFlow = _viewStateFlow.asStateFlow()
 
   private var loadingJob: Job? = null
-
   private var currentIndex = 0
-
-  private val items = mutableListOf<CardUiModel>()
+  private var totalCount = 0
+  private var lastQueryText: String = ""
 
   fun obtainEvent(event: MainEvent) {
     when (event) {
 
       OnSwipeRight -> {
-        val cardTop = viewStateFlow.value.cardTop
-        Log.d("MainViewModel", "You liked ${cardTop?.text}")
-        swipe()
+        val cardTop = viewStateFlow.value.cardTop as? CardUiModelState.Success ?: return
+        Log.d("MainViewModel", "You liked ${cardTop.id}")
+        changeTopCard()
       }
 
       OnSwipeLeft -> {
-        val cardTop = viewStateFlow.value.cardTop
-        Log.d("MainViewModel", "You disliked ${cardTop?.text}")
-        swipe()
+        val cardTop = viewStateFlow.value.cardTop as? CardUiModelState.Success ?: return
+        Log.d("MainViewModel", "You disliked ${cardTop.id}")
+        changeTopCard()
+      }
+
+      OnRefreshClick -> {
+        if (canLoadMore()) {
+          getNewPage(lastQueryText)
+        } else {
+          searchRepository(lastQueryText)
+        }
       }
 
       OnSearchClick -> {
-        searchRepository()
+        searchRepository(viewStateFlow.value.inputText)
       }
 
       is OnSearchTextChange -> {
         _viewStateFlow.value = _viewStateFlow.value.copy(inputText = event.text)
       }
-    }
-  }
-
-  private fun swipe() {
-    currentIndex += 1
-    _viewStateFlow.value = _viewStateFlow.value.copy(
-      cardTop = items[currentIndex % items.size],
-      cardBottom = items[(currentIndex + 1) % items.size],
-    )
-  }
-
-  private fun searchRepository() {
-    val searchText = viewStateFlow.value.inputText
-    if (searchText.isBlank()) {
-      return
-    }
-    loadingJob = viewModelScope.launch {
-      val currentPage = 1
-      _viewStateFlow.value = _viewStateFlow.value.copy(
-        isLoading = true
-      )
-      when (val result = searchRepositoryUseCase.execute(searchText, currentPage)) {
-        is Error -> {
-          _viewStateFlow.value = _viewStateFlow.value.copy(
-            isLoading = false,
-            errorText = "Something wrong"
-          )
-        }
-
-        is Success -> {
-          val uiModels = result.item.map {
-            CardUiModel(it.id)
-          }
-          items.clear()
-          items.addAll(uiModels)
-          _viewStateFlow.value = _viewStateFlow.value.copy(
-            isLoading = false,
-            currentPage = currentPage,
-            cardTop = items.firstOrNull(),
-            cardBottom = items.secondOrNull(),
-          )
-        }
-      }
-    }
-  }
-
-  private fun loadNewPage() {
-    loadingJob = viewModelScope.launch {
-      val searchText = viewStateFlow.value.inputText
-      val res = searchRepositoryUseCase.execute(searchText, 1)
-      Log.d("MainViewModel", res.toString())
     }
   }
 
@@ -116,8 +73,110 @@ class MainViewModel @Inject constructor(
     loadingJob = null
   }
 
-  private fun <T> List<T>.secondOrNull(): T? {
-    return if (size < 2) null else this[1]
+  private fun changeTopCard() {
+    currentIndex += 1
+    if (currentIndex == items.size - 2 && canLoadMore()) {
+      getNewPage(lastQueryText)
+    }
+    _viewStateFlow.value = _viewStateFlow.value.copy(
+      cardTop = getTopCard(),
+      cardBottom = getBottomCard(),
+    )
   }
+
+  private fun searchRepository(query: String) {
+    if (query.isBlank()) {
+      return
+    }
+    lastQueryText = query
+    loadingJob = viewModelScope.launch {
+      val currentPage = 1
+      currentIndex = 0
+      _viewStateFlow.value = _viewStateFlow.value.copy(
+        cardTop = CardUiModelState.Loading
+      )
+      when (val result = searchRepositoryUseCase.execute(query, currentPage)) {
+        is Error -> {
+          _viewStateFlow.value = _viewStateFlow.value.copy(
+            cardTop = CardUiModelState.Error("Something wrong, please try again")
+          )
+        }
+
+        is Success -> {
+          val uiModels = result.item.items.map {
+            CardUiModelState.Success(it.id)
+          }
+          totalCount = result.item.totalCount
+          items.clear()
+          items.addAll(uiModels)
+          if (canLoadMore()) {
+            items.add(CardUiModelState.Loading)
+          }
+          if (uiModels.isEmpty()) {
+            _viewStateFlow.value = _viewStateFlow.value.copy(
+              currentPage = currentPage,
+              cardTop = CardUiModelState.Empty("Empty after search"),
+              cardBottom = CardUiModelState.Empty("Empty after search"),
+            )
+          } else {
+            _viewStateFlow.value = _viewStateFlow.value.copy(
+              currentPage = currentPage,
+              cardTop = getTopCard(),
+              cardBottom = getBottomCard(),
+            )
+          }
+
+        }
+      }
+    }
+  }
+
+  private fun getNewPage(query: String) {
+    loadingJob = viewModelScope.launch {
+      val currentPage = viewStateFlow.value.currentPage + 1
+      when (val result = searchRepositoryUseCase.execute(query, currentPage)) {
+        is Error -> {
+          _viewStateFlow.value = _viewStateFlow.value.copy(
+            cardTop = CardUiModelState.Error("Something wrong, please try again")
+          )
+        }
+
+        is Success -> {
+          val uiModels = result.item.items.map {
+            CardUiModelState.Success(it.id)
+          }
+          totalCount = result.item.totalCount
+          items = items.filterIsInstance<CardUiModelState.Success>().toMutableList()
+          items.addAll(uiModels)
+          if (canLoadMore()) {
+            items.add(CardUiModelState.Loading)
+          }
+          _viewStateFlow.value = _viewStateFlow.value.copy(
+            currentPage = currentPage,
+            cardTop = getTopCard(),
+            cardBottom = getBottomCard(),
+          )
+        }
+      }
+    }
+  }
+
+  private fun getInitialState() = MainState(
+    inputText = "",
+    currentPage = 1,
+    cardTop = CardUiModelState.Empty("Your list are empty"),
+    cardBottom = CardUiModelState.Empty("Your list are empty"),
+  )
+
+  private fun getTopCard(): CardUiModelState {
+    return items[currentIndex % items.size]
+
+  }
+
+  private fun getBottomCard(): CardUiModelState {
+    return items[(currentIndex + 1) % items.size]
+  }
+
+  private fun canLoadMore() = totalCount > items.size
 
 }

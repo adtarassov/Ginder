@@ -1,20 +1,19 @@
 package com.adtarassov.ginder.presentation
 
-import android.opengl.Visibility
 import android.os.Bundle
-import android.view.View.GONE
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
 import android.view.inputmethod.InputMethodManager
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.constraintlayout.motion.widget.TransitionAdapter
-import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.adtarassov.ginder.R
 import com.adtarassov.ginder.databinding.ActivityMainBinding
+import com.adtarassov.ginder.presentation.CardUiModelState.Empty
+import com.adtarassov.ginder.presentation.CardUiModelState.Error
+import com.adtarassov.ginder.presentation.CardUiModelState.Loading
+import com.adtarassov.ginder.presentation.MainEvent.OnRefreshClick
 import com.adtarassov.ginder.presentation.MainEvent.OnSearchClick
 import com.adtarassov.ginder.presentation.MainEvent.OnSearchTextChange
 import com.adtarassov.ginder.presentation.MainEvent.OnSwipeLeft
@@ -40,6 +39,12 @@ class MainActivity : AppCompatActivity() {
     setContentView(binding.root)
     setupSearchView()
     binding.searchButton.setOnClickListener { sendOnSearchEvent() }
+    binding.likeButton.setOnClickListener {
+      binding.root.transitionToState(R.id.like)
+    }
+    binding.dislikeButton.setOnClickListener {
+      binding.root.transitionToState(R.id.dislike)
+    }
     binding.root.setTransitionListener(motionTransitionAdapter)
     lifecycleScope.launch {
       viewModel.viewStateFlow.collectLatest(::bindState)
@@ -75,13 +80,14 @@ class MainActivity : AppCompatActivity() {
     viewModel.obtainEvent(OnSearchClick)
   }
 
+  private fun onRefreshClick() {
+    viewModel.obtainEvent(OnRefreshClick)
+  }
+
   private fun bindState(state: MainState) {
-    changeTransitionAvailable(state.isLoading || state.cardTop == null || state.cardBottom == null)
-    state.cardTop?.let { binding.cardOne.setState(it) }
-    state.cardBottom?.let { binding.cardTwo.setState(it) }
-    binding.progressBar.visibility = if (state.isLoading) VISIBLE else INVISIBLE
-    binding.root.progress = 0f
-    binding.root.setTransition(R.id.startToLeft)
+    changeTransitionAvailable(disable = state.cardTop is Empty || state.cardTop is Loading || state.cardTop is Error)
+    binding.cardOne.setState(state.cardTop, ::onRefreshClick)
+    binding.cardTwo.setState(state.cardBottom, ::onRefreshClick)
   }
 
   private fun hideKeyboard() {
@@ -93,6 +99,8 @@ class MainActivity : AppCompatActivity() {
   private fun changeTransitionAvailable(disable: Boolean) {
     binding.root.enableTransition(R.id.startToRight, !disable)
     binding.root.enableTransition(R.id.startToLeft, !disable)
+    binding.dislikeButton.isEnabled = !disable
+    binding.likeButton.isEnabled = !disable
   }
 
   private inner class MotionTransitionAdapter : TransitionAdapter() {
@@ -100,10 +108,14 @@ class MainActivity : AppCompatActivity() {
       when (currentId) {
         R.id.offScreenUnlike -> {
           viewModel.obtainEvent(OnSwipeLeft)
+          binding.root.progress = 0f
+          binding.root.setTransition(R.id.startToRight)
         }
 
         R.id.offScreenLike -> {
           viewModel.obtainEvent(OnSwipeRight)
+          binding.root.progress = 0f
+          binding.root.setTransition(R.id.startToLeft)
         }
       }
     }

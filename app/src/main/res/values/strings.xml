@@ -2,4 +2,7 @@
  <string name="app_name">Ginder</string> <!-- Git + Tinder = Ginder -->
   <string name="search_github_repo">Search GitHub Repository</string>
  <string name="search">Search</string>
+  <string name="like">Like</string>
+ <string name="dislike">Dislike</string>
+  <string name="refresh">Refresh</string>
 </resources>
