@@ -1,6 +1,7 @@
 package com.adtarassov.ginder.presentation
 
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adtarassov.ginder.data.RepositoryResponseModel
@@ -19,8 +20,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val LAST_QUERY_TEXT_KEY = "LAST_QUERY_TEXT_KEY"
+
 @HiltViewModel
 class MainViewModel @Inject constructor(
+  private val savedStateHandle: SavedStateHandle,
   private val searchRepositoryUseCase: SearchRepositoryUseCase,
 ) : ViewModel() {
 
@@ -31,8 +35,17 @@ class MainViewModel @Inject constructor(
 
   private var loadingJob: Job? = null
   private var currentIndex = 0
+  private var currentPage = 1
   private var totalCount = 0
-  private var lastQueryText: String = ""
+  private var lastQueryText = ""
+  private var queryText = ""
+
+  init {
+    val prevInputText = savedStateHandle[LAST_QUERY_TEXT_KEY] ?: ""
+    if (prevInputText.isNotBlank()) {
+      searchRepository(prevInputText)
+    }
+  }
 
   fun obtainEvent(event: MainViewEvent) {
     when (event) {
@@ -58,19 +71,14 @@ class MainViewModel @Inject constructor(
       }
 
       OnSearchClick -> {
-        searchRepository(viewStateFlow.value.inputText)
+        searchRepository(queryText)
       }
 
       is OnSearchTextChange -> {
-        _viewStateFlow.value = _viewStateFlow.value.copy(inputText = event.text)
+        val text = event.text
+        queryText = text
       }
     }
-  }
-
-  override fun onCleared() {
-    super.onCleared()
-    loadingJob?.cancel()
-    loadingJob = null
   }
 
   private fun changeTopCard() {
@@ -89,9 +97,10 @@ class MainViewModel @Inject constructor(
       return
     }
     lastQueryText = query
+    savedStateHandle[LAST_QUERY_TEXT_KEY] = query
+    currentPage = 1
+    currentIndex = 0
     loadingJob = viewModelScope.launch {
-      val currentPage = 1
-      currentIndex = 0
       _viewStateFlow.value = _viewStateFlow.value.copy(
         cardTop = CardUiModelState.Loading
       )
@@ -112,18 +121,15 @@ class MainViewModel @Inject constructor(
           }
           if (uiModels.isEmpty()) {
             _viewStateFlow.value = _viewStateFlow.value.copy(
-              currentPage = currentPage,
               cardTop = CardUiModelState.Empty("Empty after search"),
-              cardBottom = CardUiModelState.Empty("Empty after search"),
+              cardBottom = CardUiModelState.Empty(),
             )
           } else {
             _viewStateFlow.value = _viewStateFlow.value.copy(
-              currentPage = currentPage,
               cardTop = getTopCard(),
               cardBottom = getBottomCard(),
             )
           }
-
         }
       }
     }
@@ -134,8 +140,8 @@ class MainViewModel @Inject constructor(
       cardTop = CardUiModelState.Loading
     )
     loadingJob = viewModelScope.launch {
-      val currentPage = viewStateFlow.value.currentPage + 1
-      when (val result = searchRepositoryUseCase.execute(query, currentPage)) {
+      val newCurrentPage = currentPage + 1
+      when (val result = searchRepositoryUseCase.execute(query, newCurrentPage)) {
         is Error -> {
           _viewStateFlow.value = _viewStateFlow.value.copy(
             cardTop = CardUiModelState.Error("Something wrong, please try again")
@@ -145,13 +151,13 @@ class MainViewModel @Inject constructor(
         is Success -> {
           val uiModels = result.item.items.map { it.toUiModel() }
           totalCount = result.item.totalCount
+          currentPage = newCurrentPage
           items = items.filterIsInstance<CardUiModelState.Success>().toMutableList()
           items.addAll(uiModels)
           if (canLoadMore()) {
             items.add(CardUiModelState.Loading)
           }
           _viewStateFlow.value = _viewStateFlow.value.copy(
-            currentPage = currentPage,
             cardTop = getTopCard(),
             cardBottom = getBottomCard(),
           )
@@ -161,20 +167,13 @@ class MainViewModel @Inject constructor(
   }
 
   private fun getInitialState() = MainViewState(
-    inputText = "",
-    currentPage = 1,
     cardTop = CardUiModelState.Empty("Your list are empty"),
-    cardBottom = CardUiModelState.Empty("Your list are empty"),
+    cardBottom = CardUiModelState.Empty(),
   )
 
-  private fun getTopCard(): CardUiModelState {
-    return items[currentIndex % items.size]
+  private fun getTopCard() = items[currentIndex % items.size]
 
-  }
-
-  private fun getBottomCard(): CardUiModelState {
-    return items[(currentIndex + 1) % items.size]
-  }
+  private fun getBottomCard() = items[(currentIndex + 1) % items.size]
 
   private fun RepositoryResponseModel.toUiModel(): CardUiModelState.Success =
     CardUiModelState.Success(
