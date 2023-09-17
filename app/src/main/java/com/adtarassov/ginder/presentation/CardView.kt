@@ -21,28 +21,25 @@ class CardView @JvmOverloads constructor(
 
   fun setState(model: CardUiModelState, onRefresh: () -> Unit) {
     binding.progressBar.isVisible = model is Loading
+    binding.refreshButton.isVisible = model is Error
     binding.refreshButton.setOnClickListener {
       onRefresh.invoke()
     }
     when (model) {
       is Empty -> {
         binding.informationText.text = model.text
-        binding.refreshButton.isVisible = false
       }
 
       is Error -> {
-        binding.refreshButton.isVisible = true
         binding.informationText.text = model.text
       }
 
       Loading -> {
         binding.informationText.text = ""
-        binding.refreshButton.isVisible = false
       }
 
       is Success -> {
-        binding.informationText.text = model.id
-        binding.refreshButton.isVisible = false
+        binding.informationText.text = model.repoName
       }
     }
   }

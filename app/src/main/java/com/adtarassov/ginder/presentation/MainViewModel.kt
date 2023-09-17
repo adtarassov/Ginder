@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.adtarassov.ginder.data.RepositoryResponseModel
 import com.adtarassov.ginder.data.ResponseState.Error
 import com.adtarassov.ginder.data.ResponseState.Success
 import com.adtarassov.ginder.domain.SearchRepositoryUseCase
@@ -103,9 +104,7 @@ class MainViewModel @Inject constructor(
         }
 
         is Success -> {
-          val uiModels = result.item.items.map {
-            CardUiModelState.Success(it.id)
-          }
+          val uiModels = result.item.items.map { it.toUiModel() }
           totalCount = result.item.totalCount
           items.clear()
           items.addAll(uiModels)
@@ -132,6 +131,9 @@ class MainViewModel @Inject constructor(
   }
 
   private fun getNewPage(query: String) {
+    _viewStateFlow.value = _viewStateFlow.value.copy(
+      cardTop = CardUiModelState.Loading
+    )
     loadingJob = viewModelScope.launch {
       val currentPage = viewStateFlow.value.currentPage + 1
       when (val result = searchRepositoryUseCase.execute(query, currentPage)) {
@@ -142,9 +144,7 @@ class MainViewModel @Inject constructor(
         }
 
         is Success -> {
-          val uiModels = result.item.items.map {
-            CardUiModelState.Success(it.id)
-          }
+          val uiModels = result.item.items.map { it.toUiModel() }
           totalCount = result.item.totalCount
           items = items.filterIsInstance<CardUiModelState.Success>().toMutableList()
           items.addAll(uiModels)
@@ -176,6 +176,15 @@ class MainViewModel @Inject constructor(
   private fun getBottomCard(): CardUiModelState {
     return items[(currentIndex + 1) % items.size]
   }
+
+  private fun RepositoryResponseModel.toUiModel(): CardUiModelState.Success =
+    CardUiModelState.Success(
+      id = id,
+      repoName = name,
+      userName = owner.login,
+      avatarUrl = owner.avatarUrl
+    )
+
 
   private fun canLoadMore() = totalCount > items.size
 

@@ -14,5 +14,23 @@ data class SearchResponseModel(
 )
 
 data class RepositoryResponseModel(
-  val id: String,
+  @SerializedName("id")
+  val id: Long,
+
+  @SerializedName("name")
+  val name: String,
+
+  @SerializedName("owner")
+  val owner: OwnerRepositoryResponseModel,
+)
+
+data class OwnerRepositoryResponseModel(
+  @SerializedName("id")
+  val id: Long,
+
+  @SerializedName("login")
+  val login: String,
+
+  @SerializedName("avatar_url")
+  val avatarUrl: String,
 )
