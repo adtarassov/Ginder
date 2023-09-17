@@ -67,6 +67,7 @@ class MainActivity : AppCompatActivity() {
       binding.searchView.isCursorVisible = true
     }
 
+
     binding.searchView.addTextChangedListener(
       onTextChanged = { text, _, _, _ ->
         val text = text.toString()
@@ -104,18 +105,27 @@ class MainActivity : AppCompatActivity() {
   }
 
   private inner class MotionTransitionAdapter : TransitionAdapter() {
+
+    override fun onTransitionChange(motionLayout: MotionLayout?, startId: Int, endId: Int, progress: Float) {
+      if (startId == R.id.start) {
+        val shouldEnableButtons = progress < 0.1f
+        binding.dislikeButton.isEnabled = shouldEnableButtons
+        binding.likeButton.isEnabled = shouldEnableButtons
+      }
+    }
+
     override fun onTransitionCompleted(motionLayout: MotionLayout, currentId: Int) {
       when (currentId) {
         R.id.offScreenUnlike -> {
           viewModel.obtainEvent(OnSwipeLeft)
-          binding.root.progress = 0f
           binding.root.setTransition(R.id.startToRight)
+          binding.root.progress = 0f
         }
 
         R.id.offScreenLike -> {
           viewModel.obtainEvent(OnSwipeRight)
-          binding.root.progress = 0f
           binding.root.setTransition(R.id.startToLeft)
+          binding.root.progress = 0f
         }
       }
     }
