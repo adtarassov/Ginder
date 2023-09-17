@@ -20,7 +20,7 @@ class RepositoryImpl @Inject constructor(
         perPage = PER_PAGE
       ).body()
       if (response == null) {
-        ResponseState.Error(IllegalStateException("sada"))
+        ResponseState.Error(IllegalStateException("Response is null"))
       } else {
         ResponseState.Success(response)
       }
