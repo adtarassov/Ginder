@@ -1,4 +1,4 @@
-# Ginder
+# Git + Tinder = Ginder 
 
 To run the application on android device/emulator: 
  - install JDK 17 on your machine
